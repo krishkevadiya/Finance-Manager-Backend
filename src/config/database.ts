@@ -6,6 +6,7 @@ import { Account } from "../entities/Account";
 import { Transaction } from "../entities/Transaction";
 import { Category } from "../entities/Category";
 import { Budget } from "../entities/Budget";
+import { DeletedItem } from "../entities/DeletedItem";
 
 const sslSetting = (process.env.DB_SSL ?? "").toLowerCase();
 const isSSL = ["true", "1", "yes", "require"].includes(sslSetting);
@@ -19,6 +20,6 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE,
   synchronize: true,
   logging: false,
-  entities: [User, Account, Transaction, Category, Budget],
+  entities: [User, Account, Transaction, Category, Budget, DeletedItem],
   ssl: isSSL ? { rejectUnauthorized: false } : false,
 });

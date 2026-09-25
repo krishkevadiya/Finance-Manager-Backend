@@ -3,6 +3,7 @@ import { In } from "typeorm";
 
 import { AppDataSource } from "../config/database";
 import { Category } from "../entities/Category";
+import { DeletedItem } from "../entities/DeletedItem";
 import { AuthRequest } from "../middlewares/authMiddleware";
 
 const categoryRepository =
@@ -410,6 +411,20 @@ export const deleteCategory = async (
 
       return;
     }
+
+    const deletedItemRepo = AppDataSource.getRepository(DeletedItem);
+    await deletedItemRepo.save(
+      deletedItemRepo.create({
+        userId: req.user!.userId,
+        itemType: "category",
+        title: `${category.name} (${category.type})`,
+        data: {
+          id: category.id,
+          name: category.name,
+          type: category.type,
+        },
+      })
+    );
 
     await categoryRepository.remove(
       category

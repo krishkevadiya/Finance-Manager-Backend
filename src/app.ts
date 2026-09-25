@@ -15,6 +15,7 @@ import { requestLogger } from "./middlewares/requestLogger";
 import { logger } from "./config/logger";
 
 import budgetRoutes from "./routes/budgetRoutes";
+import deletedItemRoutes from "./routes/deletedItemRoutes";
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use("/api/transactions", transactionRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/budgets", budgetRoutes);
+app.use("/api/deleted-items", deletedItemRoutes);
 
 // Health check
 app.get("/", (_req, res) => {

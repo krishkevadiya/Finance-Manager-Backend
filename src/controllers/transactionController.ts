@@ -2,6 +2,7 @@ import { Response } from "express";
 import { AppDataSource } from "../config/database";
 import { Transaction } from "../entities/Transaction";
 import { Account } from "../entities/Account";
+import { DeletedItem } from "../entities/DeletedItem";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import { getBudgetStatusForTransaction } from "../services/budgetAlertService";
 
@@ -446,6 +447,26 @@ export const deleteTransaction = async (
     }
 
     await manager.save(account);
+
+    const deletedItemRepo = manager.getRepository(DeletedItem);
+    await deletedItemRepo.save(
+      deletedItemRepo.create({
+        userId: req.user!.userId,
+        itemType: "transaction",
+        title: `${transaction.type === "income" ? "Income" : "Expense"}: ${transaction.category} - ₹${Number(transaction.amount).toLocaleString("en-IN")}`,
+        data: {
+          id: transaction.id,
+          amount: transaction.amount,
+          type: transaction.type,
+          category: transaction.category,
+          description: transaction.description,
+          transactionDate: transaction.transactionDate,
+          accountId: account.id,
+          accountName: account.name,
+        },
+      })
+    );
+
     await manager.remove(transaction);
   });
 

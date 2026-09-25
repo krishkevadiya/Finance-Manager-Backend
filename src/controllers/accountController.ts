@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { AppDataSource } from "../config/database";
 import { Account } from "../entities/Account";
+import { DeletedItem } from "../entities/DeletedItem";
 import { User } from "../entities/User";
 import { AuthRequest } from "../middlewares/authMiddleware";
 
@@ -297,6 +298,22 @@ export const deleteAccount = async (
     });
     return;
   }
+
+  const deletedItemRepository = AppDataSource.getRepository(DeletedItem);
+  await deletedItemRepository.save(
+    deletedItemRepository.create({
+      userId: req.user!.userId,
+      itemType: "account",
+      title: `${account.name} (${account.type})`,
+      data: {
+        id: account.id,
+        name: account.name,
+        type: account.type,
+        balance: account.balance,
+        currency: account.currency,
+      },
+    })
+  );
 
   await accountRepository.remove(account);
 

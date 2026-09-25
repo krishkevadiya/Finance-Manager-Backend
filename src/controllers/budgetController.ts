@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../config/database";
 import { Budget } from "../entities/Budget";
 import { Category } from "../entities/Category";
+import { DeletedItem } from "../entities/DeletedItem";
 import { getBudgetStatusForBudget } from "../services/budgetAlertService";
 
 interface AuthRequest extends Request {
@@ -517,6 +518,9 @@ export const deleteBudget = async (
         id: budgetId,
         userId,
       },
+      relations: {
+        category: true,
+      },
     });
 
     if (!budget) {
@@ -525,6 +529,23 @@ export const deleteBudget = async (
       });
       return;
     }
+
+    const deletedItemRepo = AppDataSource.getRepository(DeletedItem);
+    await deletedItemRepo.save(
+      deletedItemRepo.create({
+        userId,
+        itemType: "budget",
+        title: `Budget: ${budget.category?.name || "Category"} - ₹${Number(budget.amount).toLocaleString("en-IN")} (${budget.month}/${budget.year})`,
+        data: {
+          id: budget.id,
+          amount: budget.amount,
+          month: budget.month,
+          year: budget.year,
+          categoryId: budget.category?.id || budget.categoryId,
+          categoryName: budget.category?.name,
+        },
+      })
+    );
 
     await budgetRepository.remove(budget);
 
